@@ -11,9 +11,20 @@ fn main() {
 
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
-        match input.trim() {
-            "exit 0" => {
-                break;
+
+        let mut input_stream = input.trim().split(" ");
+        let command = input_stream.next().unwrap();
+        match command {
+            "exit" => {
+                if let Some(arg) = input_stream.next() {
+                    if arg == "0" {
+                        break;
+                    }
+                }
+                println!("{}: command not found", input.trim())
+            }
+            "echo" => {
+                println!("{}", input_stream.collect::<Vec<&str>>().join(" "))
             }
             _ => {
                 println!("{}: command not found", input.trim())
