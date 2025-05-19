@@ -2,52 +2,65 @@
 
 mod commands;
 
-use commands::Command;
-use std::{io::{self, Write}, str::FromStr};
+use commands::{Command, CommandComp};
+use std::{collections::HashMap, fs, io::{self, Write}, path::PathBuf};
 
-struct CommandComp<'a> {
-    command: Command,
-    orig: &'a str
-}
-
-impl <'a> CommandComp <'a> {
-    fn new(command: Command, orig: &'a str) -> Self {
-        Self {
-            command,
-            orig
+fn load_path_cmds() -> HashMap<String, PathBuf> {
+    let paths_str = std::env::var_os("PATH").unwrap();
+    let mut paths: HashMap<String, PathBuf> = HashMap::new();
+    for path in std::env::split_paths(&paths_str) {
+        if path.is_dir() {
+            let executables = match fs::read_dir(path) {
+                Ok(ent) => ent,
+                Err(_) => continue,
+            };
+            for exec in executables {
+                match exec {
+                    Ok(exec) => {
+                        if !exec.path().is_dir() {
+                            let mut filename = exec.file_name().to_str().unwrap().to_owned().to_lowercase();
+                            let is_linux_binary = !filename.contains(".");
+                            if filename.ends_with(".exe") || filename.ends_with(".bin") || is_linux_binary {
+                                if !is_linux_binary {filename = filename.rsplit_once(".").unwrap().0.to_owned();}
+                                paths.insert(filename, exec.path());
+                            }
+                        }
+                    }
+                    Err(_) => continue,
+                };
+            }
         }
     }
-}
-
-fn spit_command<'a>(stream: &mut std::str::Split<'a, &'static str>) -> CommandComp<'a> {
-    let command_str = stream.next();
-    if let Some(command_str) = command_str {
-        let command = Command::from_str(command_str).unwrap_or(Command::Invalid);
-        CommandComp::new(command, command_str)
-    } else {
-        CommandComp::new(Command::Invalid, "")
-    }
+    println!("{:#?}", paths);
+    paths
 }
 
 fn main() {
-    // Uncomment this block to pass the first stage
+    let paths = load_path_cmds();
 
-    // Wait for user input
     loop {
+
+        // Wait for user input
         print!("$ ");
         io::stdout().flush().unwrap();
-
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
-
         let mut input_stream: std::str::Split<'_, &'static str> = input.trim().split(" ");
-        let command = spit_command(&mut input_stream).command;
+        let command = CommandComp::builtin_map_command(input_stream.next()).command;
+
+        // Find command
         match command {
             Command::Type => {
-                let c: CommandComp<'_> = spit_command(&mut input_stream);
+                let c: CommandComp<'_> = CommandComp::builtin_map_command(input_stream.next());
                 match c.command {
                     Command::Invalid => {
-                        println!("{}: not found", c.orig)
+                        let cmd = c.orig.to_lowercase();
+                        if paths.contains_key(&cmd) {
+                            println!("{cmd} is {path}", path=paths.get(&cmd).unwrap().to_str().unwrap());
+                            continue;
+                        }
+                        // Not builtin or in path
+                        println!("{}: not found", c.orig);
                     }
                     _ => {
                         println!("{} is a shell builtin", c.orig)
@@ -70,5 +83,4 @@ fn main() {
             }
         }
     }
-
 }
