@@ -9,6 +9,7 @@ fn load_path_cmds() -> HashMap<String, PathBuf> {
     let paths_str = std::env::var("PATH").unwrap();
     let mut paths: HashMap<String, PathBuf> = HashMap::new();
     for path in std::env::split_paths(&paths_str) {
+        println!("{path:#?}");
         if path.is_dir() {
             let executables = match fs::read_dir(path) {
                 Ok(ent) => ent,
