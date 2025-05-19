@@ -31,7 +31,6 @@ fn load_path_cmds() -> HashMap<String, PathBuf> {
             }
         }
     }
-    println!("{:#?}", paths);
     paths
 }
 
