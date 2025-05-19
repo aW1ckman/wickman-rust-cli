@@ -24,7 +24,7 @@ fn load_path_cmds() -> HashMap<String, String> {
                         if !exec.path().is_dir() {
                             let mut filename = exec.file_name().to_str().unwrap().to_owned().to_lowercase();
                             let is_linux_binary = !filename.contains(".");
-                            if filename.ends_with(".exe") || filename.ends_with(".bin") || is_linux_binary {
+                            if filename.ends_with(".bin") || is_linux_binary {
                                 let p: String = path.to_str().unwrap().to_owned() + file_seperator + &filename;
                                 if !is_linux_binary {filename = filename.rsplit_once(".").unwrap().0.to_owned();}
                                 paths.insert(filename, p);
