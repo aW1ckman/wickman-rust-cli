@@ -5,13 +5,16 @@ mod commands;
 use commands::{Command, CommandComp};
 use std::{collections::HashMap, fs, io::{self, Write}, path::PathBuf};
 
-fn load_path_cmds() -> HashMap<String, PathBuf> {
-    let paths_str = std::env::var("PATH").unwrap();
-    let mut paths: HashMap<String, PathBuf> = HashMap::new();
+fn load_path_cmds() -> HashMap<String, String> {
+    let mut file_seperator = "/";
+    if cfg!(windows) {
+        file_seperator = "\\";
+    }
+    let paths_str = std::env::var_os("PATH").unwrap();
+    let mut paths: HashMap<String, String> = HashMap::new();
     for path in std::env::split_paths(&paths_str) {
-        println!("{path:#?}");
         if path.is_dir() {
-            let executables = match fs::read_dir(path) {
+            let executables = match fs::read_dir(path.clone()) {
                 Ok(ent) => ent,
                 Err(_) => continue,
             };
@@ -22,8 +25,9 @@ fn load_path_cmds() -> HashMap<String, PathBuf> {
                             let mut filename = exec.file_name().to_str().unwrap().to_owned().to_lowercase();
                             let is_linux_binary = !filename.contains(".");
                             if filename.ends_with(".exe") || filename.ends_with(".bin") || is_linux_binary {
+                                let p: String = path.to_str().unwrap().to_owned() + file_seperator + &filename;
                                 if !is_linux_binary {filename = filename.rsplit_once(".").unwrap().0.to_owned();}
-                                paths.insert(filename, exec.path());
+                                paths.insert(filename, p);
                             }
                         }
                     }
@@ -56,7 +60,7 @@ fn main() {
                     Command::Invalid => {
                         let cmd = c.orig.to_lowercase();
                         if let Some(path) = paths.get(&cmd) {
-                            println!("{cmd} is {path}", path=path.to_str().unwrap());
+                            println!("{cmd} is {path}");
                             continue;
                         }
                         // Not builtin or in path
