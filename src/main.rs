@@ -54,8 +54,8 @@ fn main() {
                 match c.command {
                     Command::Invalid => {
                         let cmd = c.orig.to_lowercase();
-                        if paths.contains_key(&cmd) {
-                            println!("{cmd} is {path}", path=paths.get(&cmd).unwrap().to_str().unwrap());
+                        if let Some(path) = paths.get(&cmd) {
+                            println!("{cmd} is {path}", path=path.to_str().unwrap());
                             continue;
                         }
                         // Not builtin or in path
