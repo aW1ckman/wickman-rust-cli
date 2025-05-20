@@ -2,7 +2,7 @@
 
 mod commands;
 
-use commands::{Command, CommandComp};
+use commands::{CliCommand, CliCommandComp};
 use std::{collections::HashMap, fs, io::{self, Write}, path::PathBuf};
 
 fn load_path_cmds() -> HashMap<String, PathBuf> {
@@ -47,14 +47,15 @@ fn main() {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         let mut input_stream: std::str::Split<'_, &'static str> = input.trim().split(" ");
-        let command = CommandComp::builtin_map_command(input_stream.next()).command;
+        let command = CliCommandComp::builtin_map_command(input_stream.next());
 
         // Find command
-        match command {
-            Command::Type => {
-                let c: CommandComp<'_> = CommandComp::builtin_map_command(input_stream.next());
+        match command.command {
+            CliCommand::Type => {
+                let c: CliCommandComp<'_> = CliCommandComp::builtin_map_command(input_stream.next());
                 match c.command {
-                    Command::Invalid => {
+                    CliCommand::Invalid => {
+                        // Check if executable in PATH
                         let cmd = c.orig.to_lowercase();
                         if let Some(path) = paths.get(&cmd) {
                             println!("{cmd} is {path}", path=path.to_str().unwrap());
@@ -68,19 +69,38 @@ fn main() {
                     }
                 }
             }
-            Command::Echo => {
+            CliCommand::Echo => {
                 println!("{}", input_stream.collect::<Vec<&str>>().join(" "))
             }
-            Command::Exit => {
+            CliCommand::Exit => {
                 if let Some(arg) = input_stream.next() {
                     if arg == "0" {
                         break;
                     }
                 }
-                println!("{}: command not found", input.trim())
+                println!("{}: command not found", command.orig)
             }
-            Command::Invalid => {
-                println!("{}: command not found", input.trim())
+            CliCommand::Invalid => {
+                // Check if executable in PATH
+                let cmd = command.orig.to_lowercase();
+                if paths.contains_key(&cmd) {
+                    use std::process::Command;
+                    let process = Command::new(command.orig)
+                        .args(input_stream)
+                        .spawn();
+                    match process {
+                        Ok(mut process) => {
+                            let end = process.wait();
+                            if let Err(e) = end {
+                                println!("error running executable: {}\nError: {e:#?}", command.orig)
+                            }
+                        },
+                        Err(_) => println!("could not run executable: {}", command.orig),
+                    }
+                    
+                } else {
+                    println!("{}: command not found", command.orig)
+                }
             }
         }
     }
