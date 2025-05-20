@@ -80,8 +80,12 @@ fn main() {
                 }
                 println!("{}: command not found", command.orig)
             }
-            CliCommand::Pwd => {
-                println!("{}", std::env::current_dir().unwrap_or_default().display());
+            CliCommand::Pwd => println!("{}", std::env::current_dir().unwrap_or_default().display()),
+            CliCommand::Cd => {
+                let path = input_stream.next().unwrap_or("/");
+                let res = std::env::set_current_dir(path);
+                if let Ok(_) = res {continue;};
+                println!("cd: {}: No such file or directory", path);
             }
             CliCommand::Invalid => {
                 // Check if executable in PATH

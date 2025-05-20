@@ -8,6 +8,7 @@ pub enum CliCommand {
     Echo,
     Type,
     Pwd,
+    Cd,
     Invalid
 }
 
