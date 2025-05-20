@@ -7,6 +7,7 @@ pub enum CliCommand {
     Exit,
     Echo,
     Type,
+    Pwd,
     Invalid
 }
 

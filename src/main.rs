@@ -80,6 +80,9 @@ fn main() {
                 }
                 println!("{}: command not found", command.orig)
             }
+            CliCommand::Pwd => {
+                println!("{}", std::env::current_dir().unwrap_or_default().display());
+            }
             CliCommand::Invalid => {
                 // Check if executable in PATH
                 let cmd = command.orig.to_lowercase();
