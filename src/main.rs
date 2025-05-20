@@ -37,7 +37,10 @@ fn load_path_cmds() -> HashMap<String, PathBuf> {
 }
 
 fn main() {
+    // Preload env vars
     let paths = load_path_cmds();
+    let home_binding = std::env::var_os("HOME").unwrap_or_default();
+    let home: &str = home_binding.to_str().unwrap_or("/");
 
     loop {
 
@@ -62,7 +65,7 @@ fn main() {
                             continue;
                         }
                         // Not builtin or in path
-                        println!("{}: not found", c.orig);
+                        eprintln!("{}: not found", c.orig);
                     }
                     _ => {
                         println!("{} is a shell builtin", c.orig)
@@ -78,14 +81,15 @@ fn main() {
                         break;
                     }
                 }
-                println!("{}: command not found", command.orig)
+                eprintln!("{}: command not found", command.orig)
             }
             CliCommand::Pwd => println!("{}", std::env::current_dir().unwrap_or_default().display()),
             CliCommand::Cd => {
-                let path = input_stream.next().unwrap_or("/");
+                let mut path = input_stream.next().unwrap_or("/");
+                if path == "~" { path = home }
                 let res = std::env::set_current_dir(path);
                 if let Ok(_) = res {continue;};
-                println!("cd: {}: No such file or directory", path);
+                eprintln!("cd: {}: No such file or directory", path);
             }
             CliCommand::Invalid => {
                 // Check if executable in PATH
@@ -99,14 +103,14 @@ fn main() {
                         Ok(mut process) => {
                             let end = process.wait();
                             if let Err(e) = end {
-                                println!("error running executable: {}\nError: {e:#?}", command.orig)
+                                eprintln!("error running executable: {}\nError: {e:#?}", command.orig)
                             }
                         },
-                        Err(_) => println!("could not run executable: {}", command.orig),
+                        Err(_) => eprintln!("could not run executable: {}", command.orig),
                     }
                     
                 } else {
-                    println!("{}: command not found", command.orig)
+                    eprintln!("{}: command not found", command.orig)
                 }
             }
         }
