@@ -91,16 +91,12 @@ fn main() {
                 }
             }
             CliCommand::Echo => {
-                // tokenise by quotation marks
                 let res = input_stream
                     .collect::<Vec<&str>>()
                     .join(" ")
                     .replace("'", "");
                 println!("{}", res);
             }
-            // CliCommand::Cat => {
-
-            // }
             CliCommand::Exit => {
                 if let Some(arg) = input_stream.next() {
                     if arg == "0" {

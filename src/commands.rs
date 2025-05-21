@@ -14,7 +14,6 @@ pub enum CliCommand {
     Type,
     Pwd,
     Cd,
-    // Cat,
     Invalid,
 }
 
@@ -44,7 +43,6 @@ impl<'a> CliCommandComp<'a> {
 }
 
 pub fn clean_args(input: String) -> Vec<String> {
-    // echo hello 'evening  gamers' hello
 
     let mut builder: Vec<String> = vec![];
     let mut intermit: String = String::new();
