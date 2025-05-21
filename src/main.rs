@@ -2,7 +2,7 @@
 
 mod commands;
 
-use commands::{CliCommand, CliCommandComp};
+use commands::{cmd_echo, CliCommand, CliCommandComp};
 use std::{collections::HashMap, fs, io::{self, Write}, path::PathBuf};
 
 fn load_path_cmds() -> HashMap<String, PathBuf> {
@@ -73,7 +73,11 @@ fn main() {
                 }
             }
             CliCommand::Echo => {
-                println!("{}", input_stream.collect::<Vec<&str>>().join(" "))
+                // tokenise by quotation marks
+                let input = input_stream.collect::<Vec<&str>>().join(" ");
+                let res = cmd_echo(input);
+                println!("{}", res);
+            
             }
             CliCommand::Exit => {
                 if let Some(arg) = input_stream.next() {
@@ -106,7 +110,7 @@ fn main() {
                                 eprintln!("error running executable: {}\nError: {e:#?}", command.orig)
                             }
                         },
-                        Err(_) => eprintln!("could not run executable: {}", command.orig),
+                        Err(e) => eprintln!("error running executable: {}\nError: {e:#?}", command.orig),
                     }
                     
                 } else {

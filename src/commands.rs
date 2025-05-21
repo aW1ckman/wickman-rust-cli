@@ -38,3 +38,37 @@ impl <'a> CliCommandComp <'a> {
     }
 }
 
+pub fn cmd_echo (input: String) -> String {
+
+    if !input.contains("'") {
+        return input;
+    }
+
+    let mut builder: Vec<char> = vec![];
+    let mut intermit: Vec<char> = vec![];
+    let mut inquotes = false;
+    for c in input.chars()  {
+        if c.eq(&'\'') {
+            if inquotes {
+                builder.append(&mut intermit);
+                intermit = vec![];
+            }
+            inquotes = !inquotes;
+            continue
+        }
+
+        if inquotes {
+            intermit.push(c);
+        } else {
+            builder.push(c);
+        }
+    }
+    
+    // Handle case with only one ' ? Assuming treating the ' as a normal char
+    if !intermit.is_empty() {
+        builder.push('\'');
+        builder.append(&mut intermit);
+    }
+
+    builder.iter().collect::<String>()
+}
