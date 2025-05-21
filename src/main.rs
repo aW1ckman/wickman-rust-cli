@@ -106,8 +106,10 @@ fn main() {
                 let cmd = command.orig.to_lowercase();
                 if paths.contains_key(&cmd) {
                     use std::process::Command;
+                    // Clean args
+                    let args = input_stream.map(|arg| arg.replace("'", ""));
                     let process = Command::new(command.orig)
-                        .args(input_stream)
+                        .args(args)
                         .spawn();
                     match process {
                         Ok(mut process) => {
