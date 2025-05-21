@@ -39,40 +39,40 @@ impl <'a> CliCommandComp <'a> {
     }
 }
 
-pub fn cmd_echo (input: String) -> String {
+pub fn clean_args (input: String) -> Vec<String> {
+    // echo hello 'evening  gamers' hello
 
-    let mut builder: Vec<char> = vec![];
-    let mut intermit: Vec<char> = vec![];
+    let mut builder: Vec<String> = vec![];
+    let mut intermit: String = String::new();
 
     let mut inquotes = false;
-    let mut space = false;
     for c in input.chars()  {
         if c.eq(&'\'') {
+            intermit.push(c);
             if inquotes {
-                builder.append(&mut intermit);
-                intermit = vec![];
+                builder.push(intermit);
+                intermit = String::new();
             }
             inquotes = !inquotes;
-            space = false;
-            continue
-        }
-
-        if inquotes {
-            intermit.push(c);
         } else {
-            if c == ' ' {
-                if space {continue;}
-                space = true
-            } else {space = false}
-            builder.push(c);
+            if !inquotes {
+                if c == ' ' {
+                    if !intermit.is_empty() {
+                        builder.push(intermit);
+                        intermit = String::new();
+                    }
+                    // Skip push when space
+                    continue;
+                }
+            }
+        intermit.push(c);
         }
     }
     
     // Handle case with only one ' ? Assuming treating the ' as a normal char
     if !intermit.is_empty() {
-        builder.push('\'');
-        builder.append(&mut intermit);
+        builder.push(intermit);
     }
 
-    builder.iter().collect::<String>()
+    builder
 }

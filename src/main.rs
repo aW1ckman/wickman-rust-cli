@@ -2,7 +2,7 @@
 
 mod commands;
 
-use commands::{cmd_echo, CliCommand, CliCommandComp};
+use commands::{clean_args, CliCommand, CliCommandComp};
 use std::{collections::HashMap, fs, io::{self, Write}, path::PathBuf};
 
 fn load_path_cmds() -> HashMap<String, PathBuf> {
@@ -49,8 +49,13 @@ fn main() {
         io::stdout().flush().unwrap();
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
-        let mut input_stream: std::str::Split<'_, &'static str> = input.trim().split(" ");
-        let command = CliCommandComp::builtin_map_command(input_stream.next());
+        let mut unclean_args: std::str::Split<'_, &'static str> = input.trim().split(" ");
+        let command = CliCommandComp::builtin_map_command(unclean_args.next());
+
+        let clean_args = clean_args(unclean_args.collect::<Vec<&str>>().join(" "));
+        // Magic!
+        let mut input_stream = clean_args.iter().map(|s| &**s).collect::<Vec<&str>>().into_iter();
+        
 
         // Find command
         match command.command {
@@ -74,8 +79,7 @@ fn main() {
             }
             CliCommand::Echo => {
                 // tokenise by quotation marks
-                let input = input_stream.collect::<Vec<&str>>().join(" ");
-                let res = cmd_echo(input);
+                let res = input_stream.collect::<Vec<&str>>().join(" ").replace("'", "");
                 println!("{}", res);
             }
             // CliCommand::Cat => {
