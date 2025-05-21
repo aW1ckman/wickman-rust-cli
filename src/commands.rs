@@ -48,11 +48,8 @@ pub fn clean_args (input: String) -> Vec<String> {
     let mut inquotes = false;
     for c in input.chars()  {
         if c.eq(&'\'') {
+            // Currently: if one arg has multiple '' combine them
             intermit.push(c);
-            if inquotes {
-                builder.push(intermit);
-                intermit = String::new();
-            }
             inquotes = !inquotes;
         } else {
             if !inquotes {
