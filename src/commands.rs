@@ -9,6 +9,7 @@ pub enum CliCommand {
     Type,
     Pwd,
     Cd,
+    // Cat,
     Invalid
 }
 

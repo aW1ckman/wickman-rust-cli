@@ -75,11 +75,12 @@ fn main() {
             CliCommand::Echo => {
                 // tokenise by quotation marks
                 let input = input_stream.collect::<Vec<&str>>().join(" ");
-                
                 let res = cmd_echo(input);
                 println!("{}", res);
-            
             }
+            // CliCommand::Cat => {
+
+            // }
             CliCommand::Exit => {
                 if let Some(arg) = input_stream.next() {
                     if arg == "0" {
