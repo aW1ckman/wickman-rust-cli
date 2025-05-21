@@ -1,5 +1,10 @@
+use std::{
+    fs,
+    io::{self, Write},
+    path::PathBuf,
+    str::FromStr,
+};
 use strum::EnumString;
-use std::{fs, io::{self, Write}, path::PathBuf, str::FromStr};
 
 #[derive(Debug, EnumString)]
 #[strum(serialize_all = "lowercase")]
@@ -10,26 +15,25 @@ pub enum CliCommand {
     Pwd,
     Cd,
     // Cat,
-    Invalid
+    Invalid,
 }
-
 
 pub struct CliCommandComp<'a> {
     pub command: CliCommand,
-    pub orig: &'a str
+    pub orig: &'a str,
 }
 
-impl <'a> CliCommandComp <'a> {
+impl<'a> CliCommandComp<'a> {
     fn new(command: CliCommand, orig: &'a str) -> Self {
-        Self {
-            command,
-            orig
-        }
+        Self { command, orig }
     }
 
-    // pub fn builtin_map_command<'b>(stream: &mut std::str::Split<'b, &'static str>) -> CommandComp<'a> where 'b: 'a 
+    // pub fn builtin_map_command<'b>(stream: &mut std::str::Split<'b, &'static str>) -> CommandComp<'a> where 'b: 'a
 
-    pub fn builtin_map_command<'b> (command_str: Option<&'b str>) -> CliCommandComp<'a> where 'b: 'a {
+    pub fn builtin_map_command<'b>(command_str: Option<&'b str>) -> CliCommandComp<'a>
+    where
+        'b: 'a,
+    {
         if let Some(command_str) = command_str {
             let command = CliCommand::from_str(command_str).unwrap_or(CliCommand::Invalid);
             CliCommandComp::new(command, command_str)
@@ -39,14 +43,14 @@ impl <'a> CliCommandComp <'a> {
     }
 }
 
-pub fn clean_args (input: String) -> Vec<String> {
+pub fn clean_args(input: String) -> Vec<String> {
     // echo hello 'evening  gamers' hello
 
     let mut builder: Vec<String> = vec![];
     let mut intermit: String = String::new();
 
     let mut inquotes = false;
-    for c in input.chars()  {
+    for c in input.chars() {
         if c.eq(&'\'') {
             // Currently: if one arg has multiple '' combine them
             intermit.push(c);
@@ -62,10 +66,10 @@ pub fn clean_args (input: String) -> Vec<String> {
                     continue;
                 }
             }
-        intermit.push(c);
+            intermit.push(c);
         }
     }
-    
+
     // Handle case with only one ' ? Assuming treating the ' as a normal char
     if !intermit.is_empty() {
         builder.push(intermit);
