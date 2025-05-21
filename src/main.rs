@@ -75,6 +75,7 @@ fn main() {
             CliCommand::Echo => {
                 // tokenise by quotation marks
                 let input = input_stream.collect::<Vec<&str>>().join(" ");
+                
                 let res = cmd_echo(input);
                 println!("{}", res);
             

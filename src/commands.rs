@@ -40,13 +40,11 @@ impl <'a> CliCommandComp <'a> {
 
 pub fn cmd_echo (input: String) -> String {
 
-    if !input.contains("'") {
-        return input;
-    }
-
     let mut builder: Vec<char> = vec![];
     let mut intermit: Vec<char> = vec![];
+
     let mut inquotes = false;
+    let mut space = false;
     for c in input.chars()  {
         if c.eq(&'\'') {
             if inquotes {
@@ -54,12 +52,17 @@ pub fn cmd_echo (input: String) -> String {
                 intermit = vec![];
             }
             inquotes = !inquotes;
+            space = false;
             continue
         }
 
         if inquotes {
             intermit.push(c);
         } else {
+            if c == ' ' {
+                if space {continue;}
+                space = true
+            } else {space = false}
             builder.push(c);
         }
     }
